@@ -1,0 +1,90 @@
+version: '3.8'
+
+networks:
+  laravel_network:
+    #comunicacion interna de todos los microservicios
+    driver: bridge
+
+volumes:
+  db_server1_data:
+    driver: local
+  db_server2_data:
+    driver: local
+  db_server3_data:
+    driver: local
+
+services:
+  #servicio de PostgreSQL
+  db_server1:
+    image: postgres:13
+    container_name: db_server1
+    restart: unless-stopped #reinicio automatico
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=auth_db
+    ports:
+      - "5450:5432"
+    volumes:
+      - db_server1_data:/var/lib/postgresql/data
+    networks:
+      - laravel_network
+
+  #servicio de MongoDB
+  db_server2:
+    image: mongo:latest
+    container_name: db_server2
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
+    volumes:
+      - db_server2_data:/data/db
+    networks:
+      - laravel_network
+    ports:
+      - "27020:27017"
+
+  #servicio de MySQL
+  db_server3:
+    image: mysql:8.0
+    container_name: db_server3
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=order_db
+      - MYSQL_PASSWORD=root
+    ports:
+      - "3311:3306"
+    volumes:
+      - db_server3_data:/var/lib/mysql
+    networks:
+      - laravel_network
+
+  #MICROSERVICIO LARAVEL
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    restart: unless-stopped
+    volumes:
+      - ./auth-service:/var/www/html
+    environment:
+      - APP_ENV=local
+      - APP_KEY=base64:POhsXG/z4B7a6RJUURB54iyvkXgvbQ0YR02vj4SJTTc=
+      - APP_DEBUG=false
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db_server1
+      - DB_PORT=5432
+      - DB_DATABASE=auth_db
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+      - JWT_SECRET=ahm6hEy3t9m3bxh3Y1M8waJN0BtKaJpyLDqp2daLvacwwGYYC77X04reCaXRneFV
+    ports:
+      - "8888:80"
+    depends_on:
+      - db_server1
+    networks:
+      - laravel_network
+
