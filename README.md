@@ -6,7 +6,7 @@ Este microservicio permite la autenticación y el registro de usuarios mediante 
 
 ## Tecnologías Usadas 💻
 
-- PHP para la creación del microservicio.
+- Laravel para la creación del microservicio.
 - PostgreSQL para la base de datos.
 - Docker para la dockerización del microservicio y la base de datos.
 - JWT para la autenticación.
