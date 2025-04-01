@@ -11,14 +11,14 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
-     /**
+    /**
      * Create a new AuthController instance.
      *
      * @return void
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login','register']]);
+        $this->middleware('auth:api', ['except' => ['login', 'register']]);
     }
 
     /**
@@ -30,7 +30,7 @@ class AuthController extends Controller
     {
         $credentials = request(['email', 'password']);
 
-        if (! $token = auth()->attempt($credentials)) {
+        if (!$token = auth()->attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
         }
 
@@ -40,24 +40,24 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-       $validar = Validator::make($request->all(),[
-        'name' => 'required|string|max:255',
-        'email' => 'required|string|email|max:255|unique:users',
-        'password' => 'required|string|min:6',
-        'rol' => 'required|string'
-       ]);
+        $validar = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:6',
+            'rol' => 'required|string'
+        ]);
 
-       if ($validar->fails()) {
-        return response()->json(['error'=> $validar->messages()], Response::HTTP_BAD_REQUEST);
-       }
+        if ($validar->fails()) {
+            return response()->json(['error' => $validar->messages()], Response::HTTP_BAD_REQUEST);
+        }
 
-       $user = User::create([
+        $user = User::create([
             'name' => $request->input('name'),
             'email' => $request->input('email'),
             'password' => Hash::make($request->input('password')),
             'rol' => $request->input('rol')
-       ]);
-       return response()->json(['message'=>'Guardado con exito', 'user' => $user], Response::HTTP_CREATED);
+        ]);
+        return response()->json(['message' => 'Guardado con exito', 'user' => $user], Response::HTTP_CREATED);
     }
 
     /**
@@ -80,6 +80,17 @@ class AuthController extends Controller
         auth()->logout();
 
         return response()->json(['message' => 'Successfully logged out']);
+    }
+
+    /*
+
+    Show all users
+
+     */
+    public function show()
+    {
+        $user = User::all();
+        return response()->json($user);
     }
 
     /**
